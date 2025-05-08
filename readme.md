@@ -75,7 +75,7 @@ L'architecture utilise un réseau partagé `clea-network` et un volume persistan
 
 ```bash
 # Cloner le dépôt
-git clone https://github.com/WillIsback/Clea.git
+git clone --recurse-submodules https://github.com/WillIsback/Clea.git
 cd Clea
 
 # Lancer l'ensemble des services
