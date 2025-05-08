@@ -1,0 +1,6 @@
+[submodule "clea-api"]
+	path = clea-api
+	url = https://github.com/WillIsback/clea-api
+[submodule "clea-webui"]
+	path = clea-webui
+	url = https://github.com/WillIsback/clea-webui
