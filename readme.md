@@ -85,18 +85,7 @@ docker compose up -d
 docker compose ps
 ```
 
-### Option 2: Avec variables d'environnement personnalisées
 
-```bash
-# Copier le fichier d'environnement exemple
-cp .env.example .env
-
-# Éditer les variables selon vos besoins
-nano .env
-
-# Lancer avec les paramètres personnalisés
-docker compose up -d
-```
 
 ## 🔧 Configuration
 
@@ -107,7 +96,7 @@ docker compose up -d
 | db      | 5432        | 5432                  |
 | api     | 8080        | 8080                  |
 | webui   | 3000        | 3000                  |
-| nginx   | 80          | 80                    |
+| nginx   | 8888        | 8888                  |
 
 ### Variables d'environnement
 
@@ -141,17 +130,7 @@ Une fois démarré, accédez à:
 
 ```
 Clea/
-├── .env                      # Variables d'environnement globales
-├── docker-compose.yml        # Configuration d'orchestration principale
-├── clea-api/                 # Backend API Python
-│   ├── Dockerfile            # Configuration de build pour l'API
-│   ├── .env                  # Variables spécifiques à l'API
-│   └── ...
-├── clea-webui/               # Frontend SvelteKit
-│   ├── Dockerfile            # Configuration de build pour le frontend
-│   ├── nginx/conf.d/         # Configuration nginx pour le frontend
-│   └── ...
-└── README.md                 # Ce fichier
+
 ```
 
 ## 🔍 Surveillance et maintenance
@@ -160,23 +139,16 @@ Clea/
 
 ```bash
 # Suivre tous les logs
-docker compose logs -f
+tail -f logs/*
 
-# Suivre les logs d'un service spécifique
-docker compose logs -f api
+# Suivre les logs d'un service spécifique (erreur)
+tail -f logs/*.err
 ```
 
-### Redémarrer un service
+### Démarrer la solution
 
 ```bash
-docker compose restart webui
-```
-
-### Mise à jour des images
-
-```bash
-docker compose pull
-docker compose up -d --build
+./start-local-supervisor.sh
 ```
 
 ## 🛡️ Sécurité et confidentialité
