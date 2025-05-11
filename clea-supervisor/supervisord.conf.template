@@ -1,0 +1,43 @@
+[supervisord]
+nodaemon=true
+logfile=${LOGS_DIR}/supervisord.log
+logfile_maxbytes=10MB
+pidfile=${APP_ROOT}/supervisord.pid
+user=${SUPERVISOR_USER}
+
+[unix_http_server]
+file=${APP_ROOT}/supervisor.sock
+
+[supervisorctl]
+serverurl=unix://${APP_ROOT}/supervisor.sock
+
+[program:api]
+command=uv run ${API_DIR}/main.py --host ${API_HOST} --port ${API_PORT}
+directory=${API_DIR}
+autostart=true
+autorestart=false
+priority=20
+stdout_logfile=${LOGS_DIR}/api.log
+stderr_logfile=${LOGS_DIR}/api.err
+environment=DB_USER="postgres",DB_PASSWORD="password",DB_NAME="vectordb",DB_HOST="${DB_HOST}",DB_PORT="${DB_PORT}",ALLOW_ALL_ORIGINS="true",TORCH_DEVICE="cuda"
+
+[program:frontend]
+command=node ${WEBUI_DIR}/build
+directory=${WEBUI_DIR}
+environment=PORT=${WEBUI_PORT},HOST=${WEBUI_HOST},NODE_ENV=${NODE_ENV},PUBLIC_API_URL="/api"
+autostart=true
+autorestart=false
+priority=30
+stdout_logfile=${LOGS_DIR}/webui.log
+stderr_logfile=${LOGS_DIR}/webui.err
+
+[program:nginx]
+command=bash -c "sleep 5 && nginx -c ${NGINX_CONF} -p ${NGINX_DIR} -e ${NGINX_DIR}/logs/error.log -g 'daemon off;'"
+autostart=true
+autorestart=false
+startretries=3
+startsecs=10
+stopwaitsecs=15
+priority=40
+stdout_logfile=${LOGS_DIR}/nginx.log
+stderr_logfile=${LOGS_DIR}/nginx.err

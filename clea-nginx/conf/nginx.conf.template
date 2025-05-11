@@ -1,0 +1,79 @@
+worker_processes auto;
+pid ${NGINX_DIR}/nginx.pid;
+
+events {
+    worker_connections 768;
+}
+
+http {
+    client_body_temp_path ${NGINX_DIR}/temp/client_body;
+    proxy_temp_path ${NGINX_DIR}/temp/proxy;
+    fastcgi_temp_path ${NGINX_DIR}/temp/fastcgi;
+    uwsgi_temp_path ${NGINX_DIR}/temp/uwsgi;
+    scgi_temp_path ${NGINX_DIR}/temp/scgi;
+
+    sendfile on;
+    tcp_nopush on;
+    tcp_nodelay on;
+    keepalive_timeout 65;
+    types_hash_max_size 2048;
+    include ${NGINX_DIR}/conf/mime.types;
+    default_type application/octet-stream;
+
+    access_log ${NGINX_DIR}/logs/access.log;
+    error_log ${NGINX_DIR}/logs/error.log;
+
+    server {
+        listen ${NGINX_PORT};
+        server_name ${NGINX_HOST};
+        
+        error_page 500 502 503 504 /50x.html;
+        
+        proxy_connect_timeout 300;
+        proxy_send_timeout 300;
+        proxy_read_timeout 300;
+        
+        location /queue/join {
+            proxy_pass http://${WEBUI_HOST}:${WEBUI_PORT}/queue/join;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade __DOLLAR__http_upgrade;
+            proxy_set_header Connection "upgrade";
+        }
+
+        location / {
+            proxy_pass http://${WEBUI_HOST}:${WEBUI_PORT}/;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade __DOLLAR__http_upgrade;
+            proxy_set_header Connection "upgrade";
+            proxy_set_header Host __DOLLAR__host;
+            proxy_set_header X-Real-IP __DOLLAR__remote_addr;
+            proxy_set_header X-Forwarded-For __DOLLAR__proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto __DOLLAR__scheme;
+            proxy_cache_bypass __DOLLAR__http_upgrade;
+        }
+
+        location /api/ {
+            proxy_pass http://${API_HOST}:${API_PORT}/;
+            proxy_set_header Host __DOLLAR__host;
+            proxy_set_header X-Real-IP __DOLLAR__remote_addr;
+            proxy_set_header X-Forwarded-For __DOLLAR__proxy_add_x_forwarded_for;
+        }
+
+        location /api/askai/ {
+            proxy_pass http://${API_HOST}:${API_PORT}/askai/;
+            proxy_http_version 1.1;
+            proxy_set_header Connection "";
+            proxy_set_header Host __DOLLAR__host;
+            proxy_set_header X-Real-IP __DOLLAR__remote_addr;
+            proxy_set_header X-Forwarded-For __DOLLAR__proxy_add_x_forwarded_for;
+            proxy_read_timeout 86400;
+        }
+        
+        location ~ :8080/(.*) {
+            proxy_pass http://${API_HOST}:${API_PORT}/$1;
+            proxy_http_version 1.1;
+            proxy_set_header Host __DOLLAR__host;
+            proxy_set_header X-Real-IP __DOLLAR__remote_addr;
+        }
+    }
+}
